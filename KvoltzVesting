@@ -53,6 +53,18 @@ contract KvoltzVesting is Ownable{
     uint constant AIRDROP_VESTING = 950; //9.5%
     uint constant AIRDROP_TGE = 500; //5%
 
+    event KvoltzAddressUpdated(address _kvoltzTokenAddress);
+    event BUSDAddressUpdated(address _busdTokenAddress);
+    event AdminStatusSet(address _address, bool _status);
+    event SeedSalePurchased(uint _amount, address _address);
+    event PrivateSalePurchased(uint _amount, address _address);
+    event AdvisorsAdded(uint[] _amountKVZ, address[] _address);
+    event AirdropAdded(uint[] _amountKVZ, address[] _address);
+    event SeedSaleStatusChanged(bool _bool);
+    event PrivateSaleStatusChanged(bool _bool);
+    event TokenGenerationEventStarted();
+    event TokensDistributed();
+
     constructor(address _mainWallet){
         busdToken = BEP20(BUSD_ADDRESS);
         seedSaleOpen = false;
@@ -68,6 +80,7 @@ contract KvoltzVesting is Ownable{
 
     function setKvoltzTokenAddress(address _kvoltzTokenAddress) external onlyOwner{
         kvoltzToken = BEP20(_kvoltzTokenAddress);
+        emit KvoltzAddressUpdated(_kvoltzTokenAddress);
     }
 
     /*  Sets the token that will used to buy the Seed/Private Sale.
@@ -76,12 +89,14 @@ contract KvoltzVesting is Ownable{
 
     function setBUSDTokenAddress(address _busdTokenAddress) external onlyOwner{
         busdToken = BEP20(_busdTokenAddress);
+        emit BUSDAddressUpdated(_busdTokenAddress);
     }
 
     /*  Gives Admin privileges to a wallet.*/
 
     function setAdmin(address _address, bool _status) external onlyOwner{
         isAdmin[_address] = _status;
+        emit AdminStatusSet(_address, _status);
     }
 
     /* Returns the total amount of active vesting tokens in the Seed Sale.*/
@@ -141,6 +156,7 @@ contract KvoltzVesting is Ownable{
             seedSaleBuyers.push(msg.sender);
         }
         seedSaleTokens[msg.sender] += _amount * 100 / 5; // Price: 0,05 BUSD
+        emit SeedSalePurchased(_amount, msg.sender);
     }
 
     /*  Allows the caller to buy Private Sale tokens.
@@ -156,6 +172,7 @@ contract KvoltzVesting is Ownable{
             privateSaleBuyers.push(msg.sender);
         }
         privateSaleTokens[msg.sender] += _amount * 100 / 6; // Price: 0,06 BUSD
+        emit PrivateSalePurchased(_amount, msg.sender);
     }
 
     /*  Allows the admin to allocate Seed Sale tokens to a wallet.
@@ -171,6 +188,7 @@ contract KvoltzVesting is Ownable{
             seedSaleBuyers.push(_address);
         }
         seedSaleTokens[_address] += _amount * 100 / 5;
+        emit SeedSalePurchased(_amount, _address);
     }
 
     /*  Allows the admin to allocate Private Sale tokens to a wallet.
@@ -186,6 +204,7 @@ contract KvoltzVesting is Ownable{
             privateSaleBuyers.push(_address);
         }
         privateSaleTokens[_address] += _amount * 100 / 6;
+        emit PrivateSalePurchased(_amount, _address);
     }
 
     /*  Allows the admin to allocate Advisors tokens to a wallet.
@@ -203,6 +222,7 @@ contract KvoltzVesting is Ownable{
             tokensSum += _amountKVZ[i];
         }
         require(getAdvisorsTokens() + tokensSum <= ADVISORS_TOKENS, "Advisors cap reached.");
+        emit AdvisorsAdded(_amountKVZ, _address);
     }
 
     /*  Allows the admin to allocate Airdrop tokens to a wallet.
@@ -220,18 +240,21 @@ contract KvoltzVesting is Ownable{
             tokensSum += _amountKVZ[i];
         }
         require(getAirdropTokens() + tokensSum <= AIRDROP_TOKENS, "Airdrop cap reached.");
+        emit AirdropAdded(_amountKVZ, _address);
     }
 
     /* Allows to Open and Close the Seed Sale.*/
 
     function setSeedSaleStatus(bool _bool) external onlyOwner{
         seedSaleOpen = _bool;
+        emit SeedSaleStatusChanged(_bool);
     }
 
     /* Allows to Open and Close the Private Sale.*/
 
     function setPrivateSaleStatus(bool _bool) external onlyOwner{
         privateSaleOpen = _bool;
+        emit PrivateSaleStatusChanged(_bool);
     }
 
     /* Returns the remaining amount of Seed Sale vesting tokens of a wallet.*/
@@ -286,6 +309,7 @@ contract KvoltzVesting is Ownable{
             kvoltzToken.transfer(receiverAirdrop, availableTokensAirdrop);
         }
         tgeSet = true;
+        emit TokenGenerationEventStarted();
     }
 
     /*  Returns the total amount of tokens that can currently be distributed.
@@ -409,6 +433,7 @@ contract KvoltzVesting is Ownable{
                 airdropTokensReceived[receiverAirdrop] += availableTokensAirdrop;
             }
         }
+        emit TokensDistributed();
         
     }
 
