@@ -43,6 +43,7 @@ contract Kvoltz is BEP20{
     }
 
     function setTax(uint8 _buyTaxPercentage, uint8 _sellTaxPercentage, uint8 _transferTaxPercentage) external onlyOwner {
+        require(_buyTaxPercentage <= 25 && _sellTaxPercentage <= 25 && _transferTaxPercentage <= 25, "KvoltzToken: Taxes cannot be greater than 25 percent.");
         buyTaxPercentage = _buyTaxPercentage;
         sellTaxPercentage = _sellTaxPercentage;
         transferTaxPercentage = _transferTaxPercentage;
@@ -59,12 +60,15 @@ contract Kvoltz is BEP20{
     }
 
     function setTaxWallet(address _walletAddress, bool _isTaxWallet) external onlyOwner {
+        require(_walletAddress != address(0), "KvoltzToken: Wallet address is the zero address.");
         isTaxWallet[_walletAddress] = _isTaxWallet;
         emit updateTaxWallet(_walletAddress, _isTaxWallet);
     }
 
     function setTaxWallet(address _walletAddress) external onlyOwner {
+        require(_walletAddress != address(0), "KvoltzToken: Wallet address is the zero address.");
         taxWallet = _walletAddress;
+        isTaxWallet[_walletAddress] = true;
         emit updateTaxWallet(_walletAddress);
     }
 
